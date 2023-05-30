@@ -1,6 +1,8 @@
 <script setup>
 import { Head } from "@inertiajs/vue3";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
+import { Centrifuge } from "centrifuge";
+
 defineProps({
     room: {
         type: Object,
@@ -9,6 +11,69 @@ defineProps({
         type: Boolean,
     },
 });
+
+const subscribeTokenEndpoint =
+    "http://laravel-centrifugo.develop/broadcasting/auth";
+
+const centrifuge = new Centrifuge("ws://localhost:8002/connection/websocket", {
+    token: "CONNECTION_TOKEN",
+});
+
+centrifuge
+    .on("connecting", function (ctx) {
+        console.log(`connecting: ${ctx.code}, ${ctx.reason}`);
+    })
+    .on("connected", function (ctx) {
+        console.log(`connected over ${ctx.transport}`);
+    })
+    .on("disconnected", function (ctx) {
+        console.log(`disconnected: ${ctx.code}, ${ctx.reason}`);
+    })
+    .connect();
+
+const sub = centrifuge.newSubscription("test:test", {
+    getToken: function (ctx) {
+        return customGetToken(subscribeTokenEndpoint, ctx);
+    },
+});
+
+sub.on("publication", function (ctx) {
+    container.innerHTML = ctx.data.value;
+    document.title = ctx.data.value;
+})
+    .on("subscribing", function (ctx) {
+        console.log(`subscribing: ${ctx.code}, ${ctx.reason}`);
+    })
+    .on("subscribed", function (ctx) {
+        console.log("subscribed", ctx);
+    })
+    .on("unsubscribed", function (ctx) {
+        console.log(`unsubscribed: ${ctx.code}, ${ctx.reason}`);
+    })
+    .subscribe();
+
+function customGetToken(endpoint, ctx) {
+    console.log(222);
+    return new Promise((resolve, reject) => {
+        fetch(endpoint, {
+            method: "POST",
+            headers: new Headers({ "Content-Type": "application/json" }),
+            body: JSON.stringify(ctx),
+        })
+            .then((res) => {
+                if (!res.ok) {
+                    throw new Error(`Unexpected status code ${res.status}`);
+                }
+                return res.json();
+            })
+            .then((data) => {
+                resolve(data.token);
+            })
+            .catch((err) => {
+                reject(err);
+            });
+    });
+}
 
 const sendMessage = () => {
     console.log("Button clicked!");

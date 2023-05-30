@@ -18,6 +18,7 @@
         "vue": "^3.2.41"
     },
     "dependencies": {
-        "@webzlodimir/vue-avatar": "^0.0.8"
+        "@webzlodimir/vue-avatar": "^0.0.8",
+        "centrifuge": "^3.1.2"
     }
 }
