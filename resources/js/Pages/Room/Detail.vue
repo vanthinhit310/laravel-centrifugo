@@ -1,8 +1,6 @@
 <script setup>
 import { Head } from "@inertiajs/vue3";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
-import { Centrifuge } from "centrifuge";
-import { toRefs } from "vue";
 
 const props = defineProps({
     room: {
@@ -40,24 +38,7 @@ const getToken = (url, ctx) => {
 
 const subscribeTokenEndpoint =
     "http://laravel-centrifugo.develop/broadcasting/auth";
-const centrifuge = new Centrifuge("ws://localhost:8002/connection/websocket", {
-    token: props.connectionToken,
-    getToken: function (ctx) {
-        return getToken("/centrifuge/connection_token", ctx);
-    },
-});
 
-centrifuge
-    .on("connecting", function (ctx) {
-        console.log(`connecting: ${ctx.code}, ${ctx.reason}`);
-    })
-    .on("connected", function (ctx) {
-        console.log(`connected over ${ctx.transport}`);
-    })
-    .on("disconnected", function (ctx) {
-        console.log(`disconnected: ${ctx.code}, ${ctx.reason}`);
-    })
-    .connect();
 
 // const sub = centrifuge.newSubscription("test:test", {
 //     getToken: function (ctx) {

@@ -39,7 +39,7 @@ class RoomController extends Controller
             $query->orderBy('created_at', 'asc');
         }])->find($id);
 
-        $connectionToken = $centrifugo->generateConnectionToken(Auth::user()->id);
+        $connectionToken = $centrifugo->generateConnectionToken(Auth::user()->id, now()->addHours(6));
 
         return Inertia::render('Room/Detail', [
             'room' => $room,
