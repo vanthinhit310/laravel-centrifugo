@@ -1,7 +1,9 @@
 <script setup>
-import { Head } from "@inertiajs/vue3";
+import { Head, usePage } from "@inertiajs/vue3";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
-
+import { onUnmounted } from "vue";
+import { onDeactivated } from "vue";
+const page = usePage();
 const props = defineProps({
     room: {
         type: Object,
@@ -14,9 +16,9 @@ const props = defineProps({
     },
 });
 
-const getToken = (url, ctx) => {
+const customGetToken = (endpoint, ctx) => {
     return new Promise((resolve, reject) => {
-        fetch(url, {
+        fetch(endpoint, {
             method: "POST",
             headers: new Headers({ "Content-Type": "application/json" }),
             body: JSON.stringify(ctx),
@@ -39,31 +41,39 @@ const getToken = (url, ctx) => {
 const subscribeTokenEndpoint =
     "http://laravel-centrifugo.develop/broadcasting/auth";
 
+const sub = CENTRIFUGE_INSTANCE.newSubscription(
+    `privatezone:${page.props.auth?.user?.id}`,
+    {
+        getToken: function (ctx) {
+            return customGetToken(subscribeTokenEndpoint, ctx);
+        },
+    }
+);
 
-// const sub = centrifuge.newSubscription("test:test", {
-//     getToken: function (ctx) {
-//         return customGetToken(subscribeTokenEndpoint, ctx);
-//     },
-// });
-
-// sub.on("publication", function (ctx) {
-//     container.innerHTML = ctx.data.value;
-//     document.title = ctx.data.value;
-// })
-//     .on("subscribing", function (ctx) {
-//         console.log(`subscribing: ${ctx.code}, ${ctx.reason}`);
-//     })
-//     .on("subscribed", function (ctx) {
-//         console.log("subscribed", ctx);
-//     })
-//     .on("unsubscribed", function (ctx) {
-//         console.log(`unsubscribed: ${ctx.code}, ${ctx.reason}`);
-//     })
-//     .subscribe();
+sub.on("publication", function (ctx) {
+    console.log(ctx);
+})
+    .on("subscribing", function (ctx) {
+        console.log(`subscribing: ${ctx.code}, ${ctx.reason}`);
+    })
+    .on("subscribed", function (ctx) {
+        console.log("subscribed", ctx);
+    })
+    .on("unsubscribed", function (ctx) {
+        console.log(`unsubscribed: ${ctx.code}, ${ctx.reason}`);
+    })
+    .on("error", function (ctx) {
+        console.log("subscription error", ctx);
+    })
+    .subscribe();
 
 const sendMessage = () => {
     console.log("Button clicked!");
 };
+
+onUnmounted(() => {
+    CENTRIFUGE_INSTANCE.removeSubscription(sub)
+});
 </script>
 <template>
     <Head :title="room.name" />
