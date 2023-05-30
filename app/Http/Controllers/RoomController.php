@@ -33,20 +33,18 @@ class RoomController extends Controller
         ]);
     }
 
-    public function show(int $id)
+    public function show(int $id, Centrifugo $centrifugo)
     {
         $room = Room::with(['users', 'messages.user' => function ($query) {
             $query->orderBy('created_at', 'asc');
         }])->find($id);
 
-        /* return view('rooms.index', [
-            'currRoom' => $room,
-            'isJoin' => $room->users->contains('id', Auth::user()->id),
-        ]); */
+        $connectionToken = $centrifugo->generateConnectionToken(Auth::user()->id);
 
         return Inertia::render('Room/Detail', [
             'room' => $room,
             'isJoin' => $room->users->contains('id', Auth::user()->id),
+            'connectionToken' => $connectionToken
         ]);
     }
 
