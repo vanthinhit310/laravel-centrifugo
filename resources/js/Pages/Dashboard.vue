@@ -35,6 +35,12 @@ defineProps({
                                     class="flex-col no-underline border-none"
                                 >
                                     <span class="d-block">
+                                        <!-- <vue-avatar
+                                            :img-src="`https://robohash.org/${item.name}`"
+                                            :img-alt="item.name"
+                                            border-radius="100%"
+                                            :size="80"
+                                        /> -->
                                         <vue-avatar
                                             :username="item.name"
                                             border-radius="100%"
