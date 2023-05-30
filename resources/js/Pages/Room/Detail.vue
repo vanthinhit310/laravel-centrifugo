@@ -27,9 +27,9 @@ const sendMessage = () => {
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6 text-gray-900">
+                    <div class="p-8 text-gray-900 bg-gray-300">
                         <div
-                            class="flex flex-col items-center justify-center w-full h-96 bg-gray-100 text-gray-800 p-10"
+                            class="flex flex-col items-center justify-center w-full h-160 text-gray-800"
                         >
                             <!-- Component Start -->
                             <div
@@ -238,12 +238,7 @@ const sendMessage = () => {
                                     </div>
                                 </div>
 
-                                <div class="bg-gray-300 p-4">
-                                    <!--  <input
-                                        class="flex items-center h-10 w-full rounded px-3 text-sm"
-                                        type="text"
-                                        placeholder="Type your message…"
-                                    /> -->
+                                <div class="bg-gray-200 p-4">
                                     <div class="relative flex items-center">
                                         <input
                                             placeholder="Viết gì đó nào…"
@@ -252,7 +247,7 @@ const sendMessage = () => {
                                         />
                                         <button
                                             @click="sendMessage"
-                                            class="absolute right-2 h-7 w-16 rounded-md bg-blue-200 text-xs font-semibold text-white transition-all duration-200 ease-in-out group-focus-within:bg-blue-600 group-focus-within:hover:bg-blue-600"
+                                            class="absolute right-2 h-7 w-16 rounded-md bg-blue-600 text-xs font-semibold text-white transition-all duration-200 ease-in-out group-focus-within:bg-blue-600 group-focus-within:hover:bg-blue-600"
                                         >
                                             Gửi
                                         </button>
