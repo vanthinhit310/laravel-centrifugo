@@ -1,7 +1,7 @@
 <script setup>
 import { Head, usePage } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
-import { onUnmounted, ref } from 'vue'
+import { onUnmounted, ref, onMounted, watch } from 'vue'
 
 const page = usePage()
 const props = defineProps({
@@ -14,6 +14,7 @@ const props = defineProps({
 })
 const messageInput = ref('')
 const messages = ref([])
+const chatContainer = ref(null)
 
 if (props.room.messages && props.room.messages.length) {
     let messageList = []
@@ -52,6 +53,13 @@ const customGetToken = (endpoint, ctx) => {
     })
 }
 
+const scrollToLastMessage = () => {
+    console.log(chatContainer.value.scrollHeight)
+    if (chatContainer.value) {
+        chatContainer.value.scrollTop = chatContainer.value.scrollHeight + 100
+    }
+}
+
 // const subscribeTokenEndpoint = 'http://laravel-centrifugo.develop/broadcasting/auth'
 const subscribeTokenEndpoint = route('centrifuge.genSubscriptionToken')
 
@@ -65,7 +73,12 @@ const sub = CENTRIFUGE_INSTANCE.newSubscription(`presencezone:chatroom.${page.pr
 })
 
 sub.on('publication', function (ctx) {
-    console.log(ctx)
+    const message = ctx.data
+    const { event } = message
+    console.log(event)
+    if (event && event === 'message.new') {
+        messages.value.push(message)
+    }
 })
     .on('join', function (ctx) {
         console.log(`join`)
@@ -90,7 +103,6 @@ sub.on('publication', function (ctx) {
     .subscribe()
 
 const sendMessage = async () => {
-    console.log(messageInput.value)
     if (messageInput.value) {
         try {
             const formData = {
@@ -108,6 +120,17 @@ const sendMessage = async () => {
     }
     messageInput.value = ''
 }
+
+onMounted(() => {
+    scrollToLastMessage()
+})
+
+watch(
+    () => messages.value.length,
+    () => {
+        scrollToLastMessage()
+    }
+)
 
 onUnmounted(() => {
     CENTRIFUGE_INSTANCE.removeSubscription(sub)
@@ -128,7 +151,7 @@ onUnmounted(() => {
                         <div class="flex flex-col items-center justify-center w-full h-160 text-gray-800">
                             <!-- Component Start -->
                             <div class="flex flex-col flex-grow w-full bg-white shadow-xl rounded-lg overflow-hidden">
-                                <div class="flex flex-col flex-grow h-0 p-4 overflow-auto">
+                                <div class="flex flex-col flex-grow h-full p-4 overflow-auto" ref="chatContainer">
                                     <template v-for="(item, index) in messages" :key="index">
                                         <template v-if="parseInt(item.senderId) === parseInt($page.props.auth.user.id)">
                                             <div class="flex w-full mt-2 space-x-3 max-w-xs ml-auto justify-end" :key="index">
