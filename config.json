@@ -1,37 +1,41 @@
 {
-  "token_hmac_secret_key": "8ebde023-c2fe-45ff-99fe-ae2e190b2bc7",
-  "api_key": "c74d06bd-eeff-432f-b001-6dfa51e7f35d",
-  "admin": true,
-  "admin_password": "0f1664a3-a531-4916-9b78-75eed8db4187",
-  "admin_secret": "674a1436-9e27-45d4-a496-0ffa19d31111",
-  "admin_insecure": true,
-  "prometheus": true,
-  "graphite": true,
-  "graphite_host": "localhost",
-  "graphite_port": 2003,
-  "allowed_origins": ["*"],
-  "port": "8002",
-  "presence": true,
-  "allow_subscribe_for_client": true,
-  "namespaces": [
-    {
-      "name": "publiczone",
-      "presence": false
-    },
-    {
-      "name": "privatezone",
-      "presence": false
-    },
-    {
-      "name": "presencezone",
-      "join_leave": true,
-      "presence": true,
-      "force_push_join_leave": false
-    },
-    {
-      "name": "demozone",
-      "presence": true,
-      "join_leave": true
-    }
-  ]
+    "token_hmac_secret_key": "8ebde023-c2fe-45ff-99fe-ae2e190b2bc7",
+    "api_key": "c74d06bd-eeff-432f-b001-6dfa51e7f35d",
+    "admin": true,
+    "admin_password": "0f1664a3-a531-4916-9b78-75eed8db4187",
+    "admin_secret": "674a1436-9e27-45d4-a496-0ffa19d31111",
+    "admin_insecure": true,
+    "prometheus": true,
+    "graphite": true,
+    "graphite_host": "localhost",
+    "graphite_port": 2003,
+    "allowed_origins": ["*"],
+    "port": "8002",
+    "presence": true,
+    "allow_subscribe_for_client": true,
+    "namespaces": [
+        {
+            "name": "publiczone",
+            "presence": false
+        },
+        {
+            "name": "privatezone",
+            "presence": false
+        },
+        {
+            "name": "presencezone",
+            "join_leave": true,
+            "presence": true,
+            "force_push_join_leave": true,
+            "force_recovery": true,
+            "allow_publish_for_subscriber": true,
+            "history_size": 10,
+            "history_ttl": "60s"
+        },
+        {
+            "name": "demozone",
+            "presence": true,
+            "join_leave": true
+        }
+    ]
 }

@@ -17,6 +17,8 @@ const props = defineProps({
 const messageInput = ref('')
 const messages = ref([])
 const chatContainer = ref(null)
+const typing = ref(false)
+const typingUser = ref(null)
 
 if (props.room.messages && props.room.messages.length) {
     let messageList = []
@@ -31,6 +33,15 @@ if (props.room.messages && props.room.messages.length) {
     })
 
     messages.value = messageList
+}
+const debounce = (func, timeout = 300) => {
+    let timer
+    return (...args) => {
+        clearTimeout(timer)
+        timer = setTimeout(() => {
+            func.apply(this, args)
+        }, timeout)
+    }
 }
 
 const customGetToken = (endpoint, ctx) => {
@@ -56,18 +67,15 @@ const customGetToken = (endpoint, ctx) => {
 }
 
 const scrollToLastMessage = () => {
-    console.log(chatContainer.value.scrollHeight)
     if (chatContainer.value) {
-        chatContainer.value.scrollTop = chatContainer.value.scrollHeight + 100
+        chatContainer.value.scrollTop = chatContainer.value.scrollHeight
     }
 }
 
-// const subscribeTokenEndpoint = 'http://laravel-centrifugo.develop/broadcasting/auth'
-const subscribeTokenEndpoint = route('centrifuge.genSubscriptionToken')
-
 const sub = CENTRIFUGE_INSTANCE.newSubscription(`presencezone:chatroom.${page.props.room?.id}`, {
+    debug: true,
     getToken: function (ctx) {
-        return customGetToken(subscribeTokenEndpoint, {
+        return customGetToken(route('centrifuge.genSubscriptionToken'), {
             _token: document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
             channel_name: `presencezone:chatroom.${page.props.room?.id}`,
         })
@@ -75,11 +83,19 @@ const sub = CENTRIFUGE_INSTANCE.newSubscription(`presencezone:chatroom.${page.pr
 })
 
 sub.on('publication', function (ctx) {
-    const message = ctx.data
-    const { event } = message
-    console.log(event)
+    const { event } = ctx.data
+
     if (event && event === 'message.new') {
+        const message = ctx.data
         messages.value.push(message)
+    }
+
+    if (event && event === 'typing') {
+        const { status, user } = ctx.data
+        typing.value = status
+        if (user) {
+            typingUser.value = user
+        }
     }
 })
     .on('join', function (ctx) {
@@ -122,6 +138,30 @@ const sendMessage = async () => {
     }
     messageInput.value = ''
 }
+
+const startTyping = () => {
+    typing.value = true
+    sub.publish({ status: typing.value, event: 'typing', user: page.props.auth.user }).then(
+        function (ctx) {
+            console.log('success ack from Centrifugo received', ctx)
+        },
+        function (err) {
+            console.log('publish call failed with error', err)
+        }
+    )
+    debounceStopTyping()
+}
+const debounceStopTyping = debounce(function () {
+    typing.value = false
+    sub.publish({ status: typing.value, event: 'typing', user: page.props.auth.user }).then(
+        function (ctx) {
+            console.log('success ack from Centrifugo received', ctx)
+        },
+        function (err) {
+            console.log('publish call failed with error', err)
+        }
+    )
+}, 1200)
 
 onMounted(() => {
     scrollToLastMessage()
@@ -195,9 +235,11 @@ onUnmounted(() => {
                                 </div>
 
                                 <div class="bg-gray-200 p-4">
+                                    <div class="text-xs italic font-light text-lime-400" v-if="typing && parseInt(typingUser.id) !== parseInt($page.props.auth.user.id)">{{ typingUser.name }} đang soạn tin...</div>
                                     <div class="relative flex items-center">
                                         <input
                                             @keyup.enter="sendMessage"
+                                            @input="startTyping"
                                             v-model="messageInput"
                                             placeholder="Viết gì đó nào…"
                                             type="text"
