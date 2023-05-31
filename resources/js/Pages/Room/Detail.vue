@@ -123,17 +123,8 @@ const sendMessage = async () => {
     messageInput.value = ''
 }
 
-const doScroll = (event) => {
-    const scrollHeight = event.target.scrollHeight
-    const scrollTop = event.target.scrollTop
-    const clientHeight = event.target.clientHeight
-
-    console.log({ scrollHeight, scrollTop, clientHeight })
-}
-
 onMounted(() => {
     scrollToLastMessage()
-    chatContainer.value.addEventListener('scroll', doScroll)
 })
 
 watch(
@@ -145,7 +136,6 @@ watch(
 
 onUnmounted(() => {
     CENTRIFUGE_INSTANCE.removeSubscription(sub)
-    chatContainer.value.removeEventListener(doScroll)
 })
 </script>
 <template>
@@ -228,10 +218,3 @@ onUnmounted(() => {
         </div>
     </AuthenticatedLayout>
 </template>
-
-<style>
-/* #chatContainer {
-    overflow: auto;
-    padding: 50px 0;
-} */
-</style>
