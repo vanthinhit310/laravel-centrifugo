@@ -1,15 +1,15 @@
 <script setup>
-import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
-import { Head } from "@inertiajs/vue3";
-import NavLink from "@/Components/NavLink.vue";
-import VueAvatar from "@webzlodimir/vue-avatar";
-import "@webzlodimir/vue-avatar/dist/style.css";
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
+import { Head } from '@inertiajs/vue3'
+import NavLink from '@/Components/NavLink.vue'
+import VueAvatar from '@webzlodimir/vue-avatar'
+import '@webzlodimir/vue-avatar/dist/style.css'
 
 defineProps({
     rooms: {
         type: Array,
     },
-});
+})
 </script>
 
 <template>

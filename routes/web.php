@@ -44,6 +44,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/', [RoomController::class, 'store'])->name('rooms.store');
         Route::get('{id}', [RoomController::class, 'show'])->name('rooms.show');
         Route::post('{id}', [RoomController::class, 'join'])->name('rooms.join');
+        Route::post('{id}/publish', [RoomController::class, 'publish'])->name('rooms.publish');
     });
 });
 

@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\MessageCreated;
+use App\Http\Resources\MessageResource;
+use App\Http\Resources\RoomResource;
 use App\Models\Message;
 use App\Models\Room;
 use Illuminate\Http\Request;
@@ -33,18 +36,17 @@ class RoomController extends Controller
         ]);
     }
 
-    public function show(int $id, Centrifugo $centrifugo)
+    public function show(int $id, Request $request)
     {
         $room = Room::with(['users', 'messages.user' => function ($query) {
             $query->orderBy('created_at', 'asc');
         }])->find($id);
-        $room->users()->sync(Auth::user()->id);
-        $connectionToken = $centrifugo->generateConnectionToken(Auth::user()->id, now()->addHours(6));
 
+        $room->users()->sync(Auth::user()->id);
+        $roomResource = new RoomResource($room);
         return Inertia::render('Room/Detail', [
-            'room' => $room,
-            'isJoin' => $room->users->contains('id', Auth::user()->id),
-            'connectionToken' => $connectionToken
+            'room' => json_decode($roomResource->toJson(), true),
+            'isJoin' => $room->users->contains('id', Auth::user()->id)
         ]);
     }
 
@@ -78,7 +80,6 @@ class RoomController extends Controller
     public function publish(int $id, Request $request)
     {
         $requestData = $request->json()->all();
-        dd($requestData);
         $status = Response::HTTP_OK;
 
         try {
@@ -92,22 +93,17 @@ class RoomController extends Controller
 
             $channels = [];
             foreach ($room->users as $user) {
-                $channels[] = "personal:#" . $user->id;
+                $channels[] = sprintf('presencezone:chatroom.%s', $room->id);
             }
 
-            $this->centrifugo->broadcast($channels, [
-                "text" => $message->message,
-                "createdAt" => $message->created_at->toDateTimeString(),
-                "createdAtFormatted" => $message->created_at->toFormattedDateString() . ", " . $message->created_at->toTimeString(),
-                "roomId" => $id,
-                "senderId" => Auth::user()->id,
-                "senderName" => Auth::user()->name,
-            ]);
+            $messageResource = new MessageResource($message);
+            // $this->centrifugo->broadcast($channels, json_decode($messageResource->toJson(), true));
+            MessageCreated::dispatchIf(!blank(json_decode($messageResource->toJson(), true)), json_decode($messageResource->toJson(), true));
+            return response('success', $status);
         } catch (Throwable $e) {
             Log::error($e->getMessage());
             $status = Response::HTTP_INTERNAL_SERVER_ERROR;
+            return response('', $status);
         }
-
-        return response('', $status);
     }
 }

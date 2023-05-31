@@ -29,4 +29,15 @@ class CentrifugoProxyController extends Controller
 
         return response()->json(['token' => '']);
     }
+
+    public function genSubscriptionToken(Request $request, Centrifugo $centrifugo)
+    {
+        $currentUser = Auth::user();
+
+        if (isset($currentUser) && !blank($currentUser)) {
+            return response()->json(['token' => $centrifugo->generateSubscriptionToken((string)$currentUser->id, $request->get('channel_name'), now()->addDays(1))]);
+        }
+
+        return response()->json(['token' => '']);
+    }
 }

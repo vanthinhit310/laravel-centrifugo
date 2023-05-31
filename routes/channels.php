@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Room;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Broadcast;
 
@@ -18,6 +19,11 @@ use Illuminate\Support\Facades\Broadcast;
 //     return (int) $user->id === (int) $id;
 // });
 
-Broadcast::channel('privatezone:{id}', function ($user, $id){
-    return !blank(Auth::user()->id) && !blank($id) && (int)Auth::user()->id === (int)$id;
+Broadcast::channel('presencezone:chatroom.{id}', function ($user, $roomId) {
+    $room = Room::find($roomId);
+    if($room->users->contains($user->id)){
+        return $user->toArray();
+    }
+
+    return false;
 });

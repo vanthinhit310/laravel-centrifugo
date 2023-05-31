@@ -26,7 +26,7 @@
       "name": "presencezone",
       "join_leave": true,
       "presence": true,
-      "force_push_join_leave": true
+      "force_push_join_leave": false
     },
     {
       "name": "demozone",
