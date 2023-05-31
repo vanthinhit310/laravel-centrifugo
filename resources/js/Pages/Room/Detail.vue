@@ -2,6 +2,8 @@
 import { Head, usePage } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import { onUnmounted, ref, onMounted, watch } from 'vue'
+import VueAvatar from '@webzlodimir/vue-avatar'
+import '@webzlodimir/vue-avatar/dist/style.css'
 
 const page = usePage()
 const props = defineProps({
@@ -121,8 +123,17 @@ const sendMessage = async () => {
     messageInput.value = ''
 }
 
+const doScroll = (event) => {
+    const scrollHeight = event.target.scrollHeight
+    const scrollTop = event.target.scrollTop
+    const clientHeight = event.target.clientHeight
+
+    console.log({ scrollHeight, scrollTop, clientHeight })
+}
+
 onMounted(() => {
     scrollToLastMessage()
+    chatContainer.value.addEventListener('scroll', doScroll)
 })
 
 watch(
@@ -134,6 +145,7 @@ watch(
 
 onUnmounted(() => {
     CENTRIFUGE_INSTANCE.removeSubscription(sub)
+    chatContainer.value.removeEventListener(doScroll)
 })
 </script>
 <template>
@@ -148,29 +160,41 @@ onUnmounted(() => {
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-8 text-gray-900 bg-gray-300">
-                        <div class="flex flex-col items-center justify-center w-full h-160 text-gray-800">
+                        <div class="flex flex-col items-center justify-center w-full text-gray-800">
                             <!-- Component Start -->
                             <div class="flex flex-col flex-grow w-full bg-white shadow-xl rounded-lg overflow-hidden">
-                                <div class="flex flex-col flex-grow h-full p-4 overflow-auto" ref="chatContainer">
+                                <div class="flex flex-col flex-grow h-160 py-16 px-5 overflow-auto" id="chatContainer" ref="chatContainer">
                                     <template v-for="(item, index) in messages" :key="index">
                                         <template v-if="parseInt(item.senderId) === parseInt($page.props.auth.user.id)">
-                                            <div class="flex w-full mt-2 space-x-3 max-w-xs ml-auto justify-end" :key="index">
+                                            <div class="flex w-full pb-3 space-x-3 max-w-md ml-auto justify-end" :key="index">
                                                 <div>
-                                                    <div class="bg-blue-600 text-white p-3 rounded-l-lg rounded-br-lg">
+                                                    <div class="bg-blue-600 text-white px-3 py-2 rounded-l-lg rounded-br-lg">
                                                         <p class="text-sm">
                                                             {{ item.text }}
                                                         </p>
                                                     </div>
                                                     <span class="text-xs text-gray-500 leading-none">{{ item.createdAt }}</span>
                                                 </div>
-                                                <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-300"></div>
+                                                <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-300">
+                                                    <vue-avatar
+                                                        :img-src="`https://robohash.org/${item.senderName}`"
+                                                        :img-alt="item.senderName"
+                                                        border-radius="100%"
+                                                        :size="40" />
+                                                </div>
                                             </div>
                                         </template>
                                         <template v-else>
-                                            <div class="flex w-full mt-2 space-x-3 max-w-xs" :key="index">
-                                                <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-300"></div>
+                                            <div class="flex w-full pb-3 space-x-3 max-w-md" :key="index">
+                                                <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-300">
+                                                    <vue-avatar
+                                                        :img-src="`https://robohash.org/${item.senderName}`"
+                                                        :img-alt="item.senderName"
+                                                        border-radius="100%"
+                                                        :size="40" />
+                                                </div>
                                                 <div>
-                                                    <div class="bg-gray-300 p-3 rounded-r-lg rounded-bl-lg">
+                                                    <div class="bg-gray-300 px-3 py-2 rounded-r-lg rounded-bl-lg">
                                                         <p class="text-sm">{{ item.text }}</p>
                                                     </div>
                                                     <span class="text-xs text-gray-500 leading-none">{{ item.createdAt }}</span>
@@ -204,3 +228,10 @@ onUnmounted(() => {
         </div>
     </AuthenticatedLayout>
 </template>
+
+<style>
+/* #chatContainer {
+    overflow: auto;
+    padding: 50px 0;
+} */
+</style>
