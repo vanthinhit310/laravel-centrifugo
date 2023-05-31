@@ -34,6 +34,7 @@ if (props.room.messages && props.room.messages.length) {
 
     messages.value = messageList
 }
+
 const debounce = (func, timeout = 300) => {
     let timer
     return (...args) => {
@@ -42,6 +43,32 @@ const debounce = (func, timeout = 300) => {
             func.apply(this, args)
         }, timeout)
     }
+}
+
+const getPresenceInfo = (channel, uid) => {
+    return new Promise((resolve, reject) => {
+        fetch(route('centrifuge.getUserJoined'), {
+            method: 'POST',
+            headers: new Headers({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify({
+                channel: channel,
+                uid: uid,
+                _token: document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            }),
+        })
+            .then((res) => {
+                if (!res.ok) {
+                    throw new Error(`Unexpected status code ${res.status}`)
+                }
+                return res.json()
+            })
+            .then((data) => {
+                resolve(data.info)
+            })
+            .catch((err) => {
+                reject(err)
+            })
+    })
 }
 
 const customGetToken = (endpoint, ctx) => {
@@ -98,9 +125,12 @@ sub.on('publication', function (ctx) {
         }
     }
 })
-    .on('join', function (ctx) {
-        console.log(`join`)
-        console.log({ ctx })
+    .on('join', async function (ctx) {
+        console.log(`join`, ctx)
+        const info = await getPresenceInfo(ctx.channel, ctx.info.user)
+        if (info && info.name && parseInt(info.id) !== parseInt(page.props.auth.user.id)) {
+            alert(`${info.name} vừa tham gia nhóm`)
+        }
     })
     .on('leave', function (ctx) {
         console.log(`leave`)
