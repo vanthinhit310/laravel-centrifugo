@@ -193,7 +193,7 @@ onUnmounted(() => {
                         <div class="flex flex-col items-center justify-center w-full text-gray-800">
                             <!-- Component Start -->
                             <div class="flex flex-col flex-grow w-full bg-white shadow-xl rounded-lg overflow-hidden">
-                                <div class="flex flex-col flex-grow h-160 py-16 px-5 overflow-auto" id="chatContainer" ref="chatContainer">
+                                <div class="flex flex-col flex-grow h-160 py-5 px-5 overflow-auto justify-end" id="chatContainer" ref="chatContainer">
                                     <template v-for="(item, index) in messages" :key="index">
                                         <template v-if="parseInt(item.senderId) === parseInt($page.props.auth.user.id)">
                                             <div class="flex w-full pb-3 space-x-3 max-w-md ml-auto justify-end" :key="index">
