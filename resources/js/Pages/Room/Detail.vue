@@ -142,24 +142,16 @@ const sendMessage = async () => {
 const startTyping = () => {
     typing.value = true
     sub.publish({ status: typing.value, event: 'typing', user: page.props.auth.user }).then(
-        function (ctx) {
-            console.log('success ack from Centrifugo received', ctx)
-        },
-        function (err) {
-            console.log('publish call failed with error', err)
-        }
+        function (ctx) {},
+        function (err) {}
     )
     debounceStopTyping()
 }
 const debounceStopTyping = debounce(function () {
     typing.value = false
     sub.publish({ status: typing.value, event: 'typing', user: page.props.auth.user }).then(
-        function (ctx) {
-            console.log('success ack from Centrifugo received', ctx)
-        },
-        function (err) {
-            console.log('publish call failed with error', err)
-        }
+        function (ctx) {},
+        function (err) {}
     )
 }, 1200)
 
@@ -235,7 +227,11 @@ onUnmounted(() => {
                                 </div>
 
                                 <div class="bg-gray-200 p-4">
-                                    <div class="text-xs italic font-light text-lime-400" v-if="typing && parseInt(typingUser.id) !== parseInt($page.props.auth.user.id)">{{ typingUser.name }} đang soạn tin...</div>
+                                    <div
+                                        class="text-xs italic font-light text-lime-400"
+                                        v-if="typing && parseInt(typingUser.id) !== parseInt($page.props.auth.user.id)">
+                                        {{ typingUser.name }} đang soạn tin...
+                                    </div>
                                     <div class="relative flex items-center">
                                         <input
                                             @keyup.enter="sendMessage"
