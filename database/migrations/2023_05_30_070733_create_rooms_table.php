@@ -21,7 +21,6 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('room_id');
             $table->unsignedBigInteger('user_id');
-            $table->timestamps();
 
             $table->foreign('room_id')
                 ->references('id')
@@ -30,8 +29,6 @@ return new class extends Migration
             $table->foreign('user_id')
                 ->references('id')
                 ->on('users');
-
-            $table->unique(['room_id', 'user_id']);
         });
     }
 

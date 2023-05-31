@@ -38,7 +38,7 @@ class RoomController extends Controller
         $room = Room::with(['users', 'messages.user' => function ($query) {
             $query->orderBy('created_at', 'asc');
         }])->find($id);
-
+        $room->users()->sync(Auth::user()->id);
         $connectionToken = $centrifugo->generateConnectionToken(Auth::user()->id, now()->addHours(6));
 
         return Inertia::render('Room/Detail', [
@@ -51,7 +51,7 @@ class RoomController extends Controller
     public function join(int $id)
     {
         $room = Room::find($id);
-        $room->users()->attach(Auth::user()->id);
+        $room->users()->sync([Auth::user()->id]);
 
         return redirect()->route('rooms.show', $id);
     }
@@ -78,6 +78,7 @@ class RoomController extends Controller
     public function publish(int $id, Request $request)
     {
         $requestData = $request->json()->all();
+        dd($requestData);
         $status = Response::HTTP_OK;
 
         try {

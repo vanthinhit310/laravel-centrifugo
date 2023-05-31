@@ -12,6 +12,7 @@
   "allowed_origins": ["*"],
   "port": "8002",
   "presence": true,
+  "allow_subscribe_for_client": true,
   "namespaces": [
     {
       "name": "publiczone",
